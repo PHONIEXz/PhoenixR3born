@@ -11,6 +11,12 @@ npm ci
 npm run dev
 ```
 
+## Website
+
+Production: https://phoenixr3born.vercel.app/
+
+Owner Studio: https://phoenixr3born.vercel.app/studio
+
 ## Publish to Vercel
 
 1. Create the GitHub repository `PHONIEXz/PhoenixR3born` and push this project.
@@ -23,7 +29,7 @@ npm run dev
 
 Open `/studio`, sign in using the Sanity account that owns the project, and create a **Collection item**. Visitors can browse without logging in. Only authorized project members can edit.
 
-Add a title, generate its slug, select a category and write a short introduction. Add your explanation, a destination link, a cover image, any downloadable files, or a combination of these. Publish to show it publicly. Drafts stay private. Published files are public. Unpublishing an item removes its page from the collection but does not revoke the underlying public asset URL. Delete the asset separately if you need it removed.
+Add a title, generate its slug, select a category and write a short introduction. For projects, choose **In progress** or **Completed**. Completion status is separate from publishing. Add the project website for a **Visit website** button, and its GitHub repository for source code or setup instructions. The three starting projects are marked In progress until the owner confirms completion. Add your explanation, a destination link, a cover image, any downloadable files, or a combination of these. Publish to show it publicly. Drafts stay private. Published files are public. Unpublishing an item removes its page from the collection but does not revoke the underlying public asset URL. Delete the asset separately if you need it removed.
 
 The file picker is not restricted to a specific extension. Provider file size and account quotas still apply. For large videos, apps or archives, upload them to a hosting service and add a link here. This site redirects to external destinations; it does not execute uploaded files. Content updates do not require rebuilding Vercel.
 
@@ -32,8 +38,14 @@ To change your introduction or design, edit `src/main.jsx` or `src/style.css`. T
 ## Checks
 
 ```sh
+npm test
 npm run build
+npm audit --audit-level=high
 npm run preview
 ```
 
 Confirm the collection loads, category/search controls work, item routes open directly, file downloads work, and `/studio` displays its login screen. No write tokens are included in the source. Never put a Sanity write token in a `VITE_` environment variable.
+
+## Security
+
+See SECURITY.md. Fonts are bundled locally, the public site has no anonymous write endpoints, and published content is validated before rendering. Targeted dependency overrides keep Sanity CLI transitive adm-zip, js-yaml and uuid on patched releases; check these overrides when upgrading Sanity. Weekly Dependabot updates and build/audit checks help maintain the baseline.

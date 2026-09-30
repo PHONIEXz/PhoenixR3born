@@ -1,1 +1,37 @@
-{"name":"phoenixr3born","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1","build":"vite build","preview":"vite preview --host 127.0.0.1"},"dependencies":{"react":"^19.2.0","react-dom":"^19.2.0","sanity":"^5.0.0","styled-components":"^6.1.19"},"devDependencies":{"vite":"^8.0.0"},"engines":{"node":">=22.12.0"}}
+{
+  "name": "phoenixr3born",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sanity": "^5.0.0",
+    "styled-components": "^6.1.19"
+  },
+  "devDependencies": {
+    "vite": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "overrides": {
+    "@sanity/runtime-cli": {
+      "adm-zip": "^0.6.1"
+    },
+    "@vercel/frameworks": {
+      "js-yaml": "^3.15.2"
+    },
+    "typeid-js@1.2.0": {
+      "uuid": "^11.1.1"
+    }
+  }
+}
