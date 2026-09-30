@@ -15,3 +15,11 @@ Dependency versions are pinned by the npm lockfile. GitHub checks build changes 
 Vercel provides platform DDoS mitigation. This application has no custom login or public upload endpoint to protect with an app rate limiter. Sanity is responsible for its own authentication, authorization, API limits and asset delivery.
 
 No architecture guarantees that a site cannot be breached. Account compromise, malicious authorized edits, future dependency flaws and provider incidents remain possible. This work is hardening and functional verification, not an independent penetration test.
+
+## Community security model
+
+- Supabase Auth holds account email addresses. Public profiles expose only the chosen username, display name, and bio.
+- Profiles and submissions use Postgres Row Level Security. A contributor can create only their own profile and pending submissions. Moderation rows are private and can only be changed through the moderator policy.
+- Community files live in a private Storage bucket. The client never receives a service role key. Approved downloads use short-lived signed URLs. Uploads are limited by type, size, path, and daily submission count.
+- Submissions are reviewed before publication, but moderation is not malware scanning. Review files before opening them, and do not upload private or unlawful material.
+- No security design can promise an unbreachable system. Keep the provider, dependencies, redirect URLs, and deployment settings maintained.

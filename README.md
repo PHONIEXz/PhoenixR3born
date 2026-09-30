@@ -49,3 +49,11 @@ Confirm the collection loads, category/search controls work, item routes open di
 ## Security
 
 See SECURITY.md. Fonts are bundled locally, the public site has no anonymous write endpoints, and published content is validated before rendering. Targeted dependency overrides keep Sanity CLI transitive adm-zip, js-yaml and uuid on patched releases; check these overrides when upgrading Sanity. Weekly Dependabot updates and build/audit checks help maintain the baseline.
+
+## Community sharing
+
+The community area is available at `/community`. Visitors can browse approved resources. Contributors sign in at `/account`, create a public profile, and submit a project, textbook, link, or supported file at `/submit`. New submissions stay pending until moderation approves them. Project cards show **Completed** or **In progress**, and approved contributors have public pages at `/u/username`.
+
+The Vercel Supabase integration supplies `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to the deployment. The database migration in `supabase/migrations/` enables Row Level Security, keeps email addresses in Supabase Auth, limits uploads to a private bucket, and issues short-lived download URLs only for approved resources. The first account must be the owner account because it claims the empty moderator table. Sign in once before sharing the public URL.
+
+A resource must state a sharing license. Public sharing is separate from licensing the repository itself. Contributors remain responsible for having permission to share what they upload.
