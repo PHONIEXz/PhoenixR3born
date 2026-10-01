@@ -7,13 +7,4 @@ begin
  return new;
 end; $$;
 revoke all on function private.limit_submissions() from public;
-create function private.claim_first_moderator() returns boolean language plpgsql security definer set search_path='' as $$
-begin
- perform pg_catalog.pg_advisory_xact_lock(913004);
- if exists(select 1 from private.moderators) then return false; end if;
- insert into private.moderators(user_id) values(auth.uid());
- return true;
-end; $$;
-revoke all on function private.claim_first_moderator() from public;
-grant execute on function private.claim_first_moderator() to authenticated;
 commit;
