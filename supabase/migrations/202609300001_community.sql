@@ -61,17 +61,6 @@ create trigger limit_submissions before insert on public.submissions for each ro
 create function public.moderator_status() returns boolean language sql stable security invoker set search_path='' as $$ select private.is_moderator(); $$;
 revoke all on function public.moderator_status() from public;
 grant execute on function public.moderator_status() to authenticated;
--- The first owner must claim moderation before sharing the URL. The row lock prevents a race.
-create function private.claim_first_moderator() returns boolean language plpgsql security definer set search_path='' as $$
-begin
- perform pg_catalog.pg_advisory_xact_lock(913004);
- if exists(select 1 from private.moderators) then return false; end if;
- insert into private.moderators(user_id) values(auth.uid());
- return true;
-end; $$;
-revoke all on function private.claim_first_moderator() from public;
-grant execute on function private.claim_first_moderator() to authenticated;
-
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('community','community',false,20971520,array['application/pdf','text/plain','text/markdown','text/csv','application/zip','application/x-zip-compressed','image/jpeg','image/png','image/webp','audio/mpeg','audio/wav','video/mp4','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']) on conflict (id) do update set public=excluded.public,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
 create policy community_upload on storage.objects for insert to authenticated with check(bucket_id='community' and (storage.foldername(name))[1]=auth.uid()::text and name ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}/resource$' and exists(select 1 from public.profiles where id=auth.uid()) and (select count(*) from storage.objects where bucket_id='community' and owner_id=auth.uid()::text)<25);
 create policy community_download on storage.objects for select using(bucket_id='community' and (owner_id=auth.uid()::text or private.is_moderator() or exists(select 1 from public.submissions where file_path=name and moderation_status='approved')));

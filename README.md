@@ -22,7 +22,7 @@ Owner Studio: https://phoenixr3born.vercel.app/studio
 1. Create the GitHub repository `PHONIEXz/PhoenixR3born` and push this project.
 2. In Vercel, import that repository. The Vite preset uses `npm run build` and `dist`.
 3. Name the project `phoenixr3born`. If available, its production address will be `phoenixr3born.vercel.app`. Domain names are case insensitive. The exact address depends on availability in Vercel.
-4. No environment variables or API keys are required. Public pages read published content from the dedicated public Sanity project `c5jww98i`, dataset `production`.
+4. Public collection pages read published content from Sanity project `c5jww98i`, dataset `production`. Community pages use the Vercel Supabase integration values described below. Never commit a service-role key.
 5. Add any other production or preview hostname to Sanity's allowed CORS origins before editing through that hostname. Allow credentials for Studio login. Local `http://localhost:5173` also needs to be allowed when editing locally.
 
 ## Upload and manage content
@@ -54,6 +54,8 @@ See SECURITY.md. Fonts are bundled locally, the public site has no anonymous wri
 
 The community area is available at `/community`. Visitors can browse approved resources. Contributors sign in at `/account`, create a public profile, and submit a project, textbook, link, or supported file at `/submit`. New submissions stay pending until moderation approves them. Project cards show **Completed** or **In progress**, and approved contributors have public pages at `/u/username`.
 
-The Vercel Supabase integration supplies `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to the deployment. The database migration in `supabase/migrations/` enables Row Level Security, keeps email addresses in Supabase Auth, limits uploads to a private bucket, and issues short-lived download URLs only for approved resources. The first account must be the owner account because it claims the empty moderator table. Sign in once before sharing the public URL.
+The Vercel Supabase integration supplies `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to the deployment. The app also accepts `VITE_SUPABASE_ANON_KEY` on older projects. Run `supabase/migrations/202609300001_community.sql` once in the Supabase SQL Editor, then `supabase/migrations/202609300002_community_hardening.sql` and `supabase/migrations/202610010001_moderator_bootstrap.sql`. If the private bucket needs repair, `supabase/storage-bucket.sql` is safe to rerun. The migrations enable Row Level Security, keep email addresses in Supabase Auth, limit uploads to a private bucket, and issue short-lived download URLs only for approved resources.
+
+Set the Supabase Auth Site URL to `https://phoenixr3born.vercel.app` and allow `https://phoenixr3born.vercel.app/account` as a redirect URL. To test locally, also allow `http://127.0.0.1:5173/account`. Sign in with the intended owner account, then copy its User UID from Authentication > Users and run the moderator insert shown in `202610010001_moderator_bootstrap.sql`. Check existing moderator IDs before inviting contributors. Signing in alone does not grant moderation.
 
 A resource must state a sharing license. Public sharing is separate from licensing the repository itself. Contributors remain responsible for having permission to share what they upload.
