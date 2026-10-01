@@ -5,11 +5,12 @@ const url = env.VITE_SUPABASE_URL;
 const key = env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
 export const db = url && key ? createClient(url, key, {auth: {flowType: 'pkce'}}) : null;
 export const licenses = ['CC-BY-4.0','CC-BY-SA-4.0','CC0-1.0','MIT','Apache-2.0','All rights reserved','See source license'];
-export const types = {'pdf':'application/pdf','txt':'text/plain','md':'text/markdown','csv':'text/csv','zip':'application/zip','jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','mp3':'audio/mpeg','wav':'audio/wav','mp4':'video/mp4','docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation','xlsx':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
+export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 export function checkFile(file) {
- if (!file || !types[file.name.split('.').pop().toLowerCase()]) throw new Error('Choose a supported document, image, audio, video, or ZIP file.');
- if(file.size>20*1024*1024 || file.size<1) throw new Error('Files must be between 1 byte and 20 MB. Larger resources can use an external link.');
- return types[file.name.split('.').pop().toLowerCase()];
+ if(!file || typeof file.name!=='string' || !file.name.trim()) throw new Error('Choose a file to upload.');
+ if(file.size>MAX_UPLOAD_BYTES || file.size<1) throw new Error('Files must be between 1 byte and 20 MB. Larger resources can use an external link.');
+ // Never serve user-controlled HTML, SVG, scripts, or other active content inline.
+ return 'application/octet-stream';
 }
 export function submissionInput(form, userId, id, file) {
  const title=form.title.trim(), summary=form.summary.trim();
@@ -33,4 +34,12 @@ export async function readResources(filters={}) {
 export async function fileLink(resource) {
  const data=await result(db.storage.from('community').createSignedUrl(resource.file_path,60,{download:resource.file_name || 'resource'}));
  return data.signedUrl;
+}
+export async function deleteResource(resource,userId) {
+ if(!resource || resource.author_id!==userId) throw new Error('Only the uploader can remove this resource.');
+ // Storage and Postgres are separate services. Remove the object first, then its
+ // listing. A failed listing delete can be retried without restoring the file.
+ if(resource.file_path) await result(db.storage.from('community').remove([resource.file_path]));
+ const removed=await result(db.from('submissions').delete().eq('id',resource.id).eq('author_id',userId).select('id'));
+ if(removed.length!==1) throw new Error('The resource was not removed. Please try again.');
 }

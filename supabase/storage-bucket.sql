@@ -16,23 +16,7 @@ values (
   'community',
   false,
   20971520,
-  array[
-    'application/pdf',
-    'text/plain',
-    'text/markdown',
-    'text/csv',
-    'application/zip',
-    'application/x-zip-compressed',
-    'image/jpeg',
-    'image/png',
-    'image/webp',
-    'audio/mpeg',
-    'audio/wav',
-    'video/mp4',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  ]
+  null
 )
 on conflict (id) do update set
   name = excluded.name,
