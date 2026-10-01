@@ -60,6 +60,6 @@ function App() {
 }
 if (location.pathname === '/studio' || location.pathname.startsWith('/studio/')) {
   import('./studio.jsx').then(({mountStudio}) => mountStudio()).catch(() => { createRoot(document.getElementById('root')).render(<div className="state"><h1>Studio could not load.</h1><p>Check your connection and reload the page.</p><a href="/">Back to the collection</a></div>); });
-} else if (/^\/(community|account|submit|review|u|resource)(\/|$)/.test(location.pathname)) {
+} else if (/^\/(community|account|submit|review|u|resource|login|signup|forgot-password|reset-password)(\/|$)/.test(location.pathname)) {
   import('./community.jsx').then(({default: Community}) => createRoot(document.getElementById('root')).render(<Community/>)).catch(() => createRoot(document.getElementById('root')).render(<div className="state"><h1>Community could not load.</h1><a href="/">Back to collection</a></div>));
 } else createRoot(document.getElementById('root')).render(<App/>);

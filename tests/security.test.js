@@ -25,9 +25,11 @@ test('web projects offer a website and downloadable projects offer setup instruc
 });
 import {checkFile, submissionInput} from '../src/community.js';
 
-test('community uploads enforce supported types and a hard size limit', () => {
-  assert.equal(checkFile({name:'chapter.pdf',size:1024}), 'application/pdf');
-  assert.throws(() => checkFile({name:'payload.exe',size:1024}), /supported/);
+test('community accepts any file type as an attachment with a hard size limit', () => {
+  assert.equal(checkFile({name:'chapter.pdf',size:1024}), 'application/octet-stream');
+  assert.equal(checkFile({name:'sample.custom',size:1024}), 'application/octet-stream');
+  assert.equal(checkFile({name:'index.html',size:1024}), 'application/octet-stream');
+  assert.throws(() => checkFile({name:'',size:1024}), /Choose a file/);
   assert.throws(() => checkFile({name:'large.zip',size:20 * 1024 * 1024 + 1}), /20 MB/);
 });
 
