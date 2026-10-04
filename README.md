@@ -67,3 +67,13 @@ The home collection includes approved public resources from the owner profile `p
 To prepare the owner transfer, export the normalized legacy collection to a local JSON file, set `P3_OWNER_EMAIL` to the verified owner email, and run `node scripts/prepare-owner-import.mjs source.json /tmp/owner-import.sql`. Apply the generated SQL in the Supabase SQL Editor after the private-spaces migration. It checks the exact verified Auth account and inserts private resources without replacing existing user-managed rows. Do not commit the generated SQL or source export. Unpublish the corresponding Sanity documents separately to remove their public API copies.
 
 Known upstream audit limitation: the current `braces` release (3.0.3), used by Sanity CLI's code-generation tools, is flagged by GHSA-vfj7-8cjw-p6xm. `npm audit` reports eight high-severity entries along that dependency chain; `npm audit fix` currently leaves them unresolved. The public UI does not expose code-generation glob inputs. Recheck for an upstream fix before treating the dependency audit as clear.
+
+## October 4 security review
+
+Apply `202610040002_security_review.sql` after the private-spaces migration. It restricts profile writes, resource creation/sharing/review and community uploads to Auth users with a confirmed email. Existing ownership policies still apply. Reads and owner deletion remain available. Keep Confirm Email enabled: disabling it automatically confirms new accounts and defeats genuine email verification.
+
+The rolling five-submission allowance is recorded in a private event table, so deleting a resource cannot reset it. Events older than 30 days are pruned for that author on their next submission. Only event IDs, account IDs and timestamps are retained. File quotas now use the persisted Storage owner even when the provider completes metadata without a user JWT. New uploads must use `application/octet-stream`; arbitrary file extensions remain supported. Do not change the repair script back to unrestricted MIME types.
+
+An uncertain INSERT response preserves uploaded bytes. A confirmed saved listing is treated as success; definitive database rejection permits cleanup. If the save cannot be confirmed or cleanup fails, the app explains that storage may need recovery instead of silently deleting a potentially saved file. A recovery interface for unattached files remains a follow-up.
+
+See [the architecture review](docs/architecture-review.md) for the rollout checks, evidence, limitations and prioritized recommendations. These changes are proposed until the PR is merged and the migration is applied. They do not configure SMTP or claim a completed signed-in production upload test.
