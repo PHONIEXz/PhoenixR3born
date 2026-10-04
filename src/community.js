@@ -23,6 +23,25 @@ export function submissionInput(form, userId, id, file) {
  return {id,author_id:userId,title,summary,description:form.description,category:form.category,project_status:form.project_status,website_url:website,github_url:github,license:form.license,visibility:form.visibility==='public'?'public':'private',file_path:file?`${userId}/${id}/resource`:null,file_name:file?file.name.slice(0,200):null};
 }
 export async function result(request) { const {data,error}=await request; if(error) throw new Error(error.message); return data; }
+export async function insertResource(input, client=db) {
+ const {error}=await client.from('submissions').insert(input);
+ if(!error) return;
+ if(input.file_path) {
+  // A lost response does not prove the INSERT failed. Never delete a file
+  // belonging to a listing that may already have committed.
+  const confirmed=await client.from('submissions').select('id').eq('id',input.id).maybeSingle();
+  if(!confirmed.error && confirmed.data) return;
+  // Only definitive constraint/permission/trigger failures are safe to clean up.
+  const rejected=(/^(23|42)/.test(error.code||'') && error.code!=='23505') || error.code==='P0001';
+  if(rejected && !confirmed.error && !confirmed.data) {
+   const removed=await client.storage.from('community').remove([input.file_path]);
+   if(removed.error) throw new Error('The resource was not saved, and its uploaded file could not be removed. Contact the site owner to recover the storage space.');
+  } else {
+   throw new Error('The save could not be confirmed. Your file was kept to avoid losing it. Check Your space before trying again.');
+  }
+ }
+ throw new Error(error.message);
+}
 export async function readResources(filters={}) {
  if(!db) throw new Error('Community accounts are being configured. Please check back soon.');
  let q=db.from('submissions').select('*,profiles(username,display_name)').order('created_at',{ascending:false}).limit(100);

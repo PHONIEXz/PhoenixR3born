@@ -16,7 +16,7 @@ values (
   'community',
   false,
   20971520,
-  null
+  array['application/octet-stream']
 )
 on conflict (id) do update set
   name = excluded.name,

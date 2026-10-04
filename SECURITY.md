@@ -27,3 +27,9 @@ No architecture guarantees that a site cannot be breached. Account compromise, m
 - No security design can promise an unbreachable system. Keep the provider, dependencies, redirect URLs, and deployment settings maintained.
 
 Run `npm test` for the embedded Postgres RLS regression test. It applies the actual migrations against modeled Supabase Auth and Storage schemas, verifies private reads, moderation, visibility changes, quota checks and owner deletion. Live provider verification remains a separate deployment step.
+
+The October 4 review adds restrictive verified-email write policies, a private submission-event ledger that survives resource deletion, bucket-level binary MIME restrictions and quota checks based on the persisted object owner. Upload failure handling preserves files on ambiguous network errors. Resource views are tied to the current account so a session change cannot reuse a prior account's private results.
+
+Storage quotas currently depend on a custom metadata trigger. Supabase recommends avoiding custom modifications to its managed Storage schema. This trigger was already part of the private-spaces architecture; the review corrects its JWT-dependent enforcement but does not eliminate its provider-upgrade compatibility risk. Test real Storage API uploads after rollout. A server-controlled upload reservation service is the longer-term replacement.
+
+Database backups do not back up Storage file bytes. Maintain an independent object backup and test recovery before promising durable personal cloud storage. The current public moderation workflow does not scan files for malware. The architecture review documents these remaining gaps.
