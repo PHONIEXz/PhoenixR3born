@@ -41,3 +41,12 @@ test('community submissions reject unsafe links and require a useful destination
   assert.equal(value.moderation_status, undefined);
   assert.equal(value.github_url, 'https://github.com/owner/repo');
 });
+
+
+test('resources default to private and cannot submit an approval status',()=>{
+ const base={title:'A useful resource',summary:'A useful resource for people learning.',description:'',category:'Learning',project_status:'in-progress',website_url:'https://example.com',github_url:'',license:'All rights reserved',moderation_status:'approved'};
+ assert.equal(submissionInput(base,'owner','resource',null).visibility,'private');
+ assert.equal(submissionInput({...base,visibility:'public'},'owner','resource',null).visibility,'public');
+ assert.equal(submissionInput({...base,visibility:'unlisted'},'owner','resource',null).visibility,'private');
+ assert.equal(submissionInput(base,'owner','resource',null).moderation_status,undefined);
+});

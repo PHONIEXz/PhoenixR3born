@@ -20,7 +20,7 @@ export function submissionInput(form, userId, id, file) {
  if(form.github_url && (!github || !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/.test(github))) throw new Error('Enter a GitHub repository link, such as https://github.com/owner/project.');
  if(!website && !github && !file) throw new Error('Add a website, GitHub repository, or file.');
  if(!licenses.includes(form.license)) throw new Error('Choose a sharing license.');
- return {id,author_id:userId,title,summary,description:form.description,category:form.category,project_status:form.project_status,website_url:website,github_url:github,license:form.license,file_path:file?`${userId}/${id}/resource`:null,file_name:file?file.name.slice(0,200):null};
+ return {id,author_id:userId,title,summary,description:form.description,category:form.category,project_status:form.project_status,website_url:website,github_url:github,license:form.license,visibility:form.visibility==='public'?'public':'private',file_path:file?`${userId}/${id}/resource`:null,file_name:file?file.name.slice(0,200):null};
 }
 export async function result(request) { const {data,error}=await request; if(error) throw new Error(error.message); return data; }
 export async function readResources(filters={}) {
@@ -29,6 +29,7 @@ export async function readResources(filters={}) {
  if(filters.author) q=q.eq('author_id',filters.author);
  if(filters.status) q=q.eq('moderation_status',filters.status);
  if(filters.id) q=q.eq('id',filters.id);
+ if(filters.visibility) q=q.eq('visibility',filters.visibility);
  return result(q);
 }
 export async function fileLink(resource) {
@@ -42,4 +43,20 @@ export async function deleteResource(resource,userId) {
  if(resource.file_path) await result(db.storage.from('community').remove([resource.file_path]));
  const removed=await result(db.from('submissions').delete().eq('id',resource.id).eq('author_id',userId).select('id'));
  if(removed.length!==1) throw new Error('The resource was not removed. Please try again.');
+}
+
+export async function changeVisibility(resource, visibility, userId) {
+ if(resource.author_id!==userId || !['private','public'].includes(visibility)) throw new Error('Only the uploader can change sharing.');
+ const changed=await result(db.from('submissions').update({visibility}).eq('id',resource.id).eq('author_id',userId).select('*,profiles(username,display_name)'));
+ if(changed.length!==1) throw new Error('Sharing was not changed. Please try again.');
+ return changed[0];
+}
+export async function storageUsage() { return result(db.rpc('storage_usage')); }
+
+export async function loadSharedCollection() {
+ if(!db) return [];
+ const profile=await result(db.from('profiles').select('id').eq('username','phoenixr3born').maybeSingle());
+ if(!profile) return [];
+ const rows=await readResources({author:profile.id,status:'approved',visibility:'public'});
+ return rows.map(r=>({_id:r.id,slug:r.id,title:r.title,summary:r.summary,description:r.description,category:r.category,status:r.project_status,featured:false,websiteUrl:safeUrl(r.website_url),githubUrl:safeUrl(r.github_url),link:null,label:'',cover:null,files:[],resourceId:r.id}));
 }
